@@ -1,0 +1,95 @@
+export const theme = {
+  colors: {
+    primary: {
+      light: '#9D50BB',
+      main: '#6E48AA',
+      dark: '#4A3178',
+    },
+    secondary: {
+      light: '#4FC3F7',
+      main: '#2196F3',
+      dark: '#0D47A1',
+    },
+    accent: '#FF4081',
+    background: {
+      main: '#F5F7FA',
+      paper: '#FFFFFF',
+      dark: '#333333',
+    },
+    text: {
+      primary: '#333333',
+      secondary: '#757575',
+      light: '#FFFFFF',
+    },
+    success: '#4CAF50',
+    warning: '#FFC107',
+    error: '#F44336',
+    info: '#2196F3',
+    gradients: {
+      primary: 'linear-gradient(90deg, #6E48AA 0%, #9D50BB 50%, #6E48AA 100%)',
+      secondary: 'linear-gradient(90deg, #2196F3 0%, #4FC3F7 50%, #2196F3 100%)',
+      accent: 'linear-gradient(90deg, #FF4081 0%, #FF80AB 50%, #FF4081 100%)',
+    },
+  },
+  fonts: {
+    main: "'Roboto', sans-serif",
+    heading: "'Montserrat', sans-serif",
+  },
+  fontSizes: {
+    xs: '0.75rem',
+    sm: '0.875rem',
+    md: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '2rem',
+    '4xl': '2.5rem',
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  borderRadius: {
+    sm: '0.25rem',
+    md: '0.5rem',
+    lg: '1rem',
+    xl: '2rem',
+    full: '9999px',
+  },
+  shadows: {
+    sm: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
+    md: '0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12)',
+    lg: '0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10)',
+    xl: '0 15px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.05)',
+  },
+  transitions: {
+    short: '0.15s ease-in-out',
+    medium: '0.3s ease-in-out',
+    long: '0.5s ease-in-out',
+  },
+  breakpoints: {
+    xs: '480px',
+    sm: '768px',
+    md: '992px',
+    lg: '1200px',
+    xl: '1600px',
+  },
+  zIndices: {
+    base: 0,
+    elevated: 1,
+    dropdown: 1000,
+    sticky: 1100,
+    fixed: 1200,
+    modalBackdrop: 1300,
+    modal: 1400,
+    popover: 1500,
+    tooltip: 1600,
+  },
+};
+
+export type Theme = typeof theme;

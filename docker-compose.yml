@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  calorie-chat:
+    build:
+      context: .
+      args:
+        - REACT_APP_OPENAI_API_KEY=${REACT_APP_OPENAI_API_KEY}
+    restart: unless-stopped
+    container_name: calorie-chat
+    ports:
+      - "8081:80"  # Map container port 80 to host port 8081
+    environment:
+      - HOST_IP=192.168.1.214  # Static IP address
+    volumes:
+      - calorie-chat-data:/app/data  # Volume for data persistence
+    networks:
+      - calorie-chat-network
+
+    # Health check to ensure the application is running correctly
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  calorie-chat-network:
+    driver: bridge
+
+volumes:
+  calorie-chat-data:
+    driver: local
+    # Ensure data persists across container restarts
+    name: calorie-chat-data
