@@ -21,6 +21,10 @@ const HeaderContent = styled.div`
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    flex-wrap: wrap;
+  }
 `;
 
 const Logo = styled.div`
@@ -37,6 +41,10 @@ const Logo = styled.div`
       text-decoration: none;
     }
   }
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+  }
 `;
 
 const Nav = styled.nav`
@@ -44,7 +52,12 @@ const Nav = styled.nav`
   gap: ${({ theme }) => theme.spacing.md};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    gap: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacing.xs};
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin-top: ${({ theme }) => theme.spacing.xs};
+    order: 3;
   }
 `;
 
@@ -56,6 +69,7 @@ const NavItem = styled(Link)<{ $active?: boolean }>`
   transition: background-color ${({ theme }) => theme.transitions.short};
   font-weight: ${({ $active }) => ($active ? 'bold' : 'normal')};
   position: relative;
+  white-space: nowrap;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -81,13 +95,18 @@ const NavItem = styled(Link)<{ $active?: boolean }>`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     padding: ${({ theme }) => theme.spacing.xs};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    flex: 1;
+    text-align: center;
   }
 `;
 
 const DateDisplay = styled.div`
+  cursor: pointer;
+  
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    display: none;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    order: 2;
   }
 `;
 
@@ -106,6 +125,9 @@ const Header: React.FC = () => {
         <Logo>
           <Link to="/">CalorieChat</Link>
         </Logo>
+        <DateDisplay onClick={handleDateClick}>
+          {state.currentDate === today ? 'Today' : state.currentDate}
+        </DateDisplay>
         <Nav>
           <NavItem to="/" $active={location.pathname === '/'}>
             Chat
@@ -129,9 +151,6 @@ const Header: React.FC = () => {
             Settings
           </NavItem>
         </Nav>
-        <DateDisplay onClick={handleDateClick}>
-          {state.currentDate === today ? 'Today' : state.currentDate}
-        </DateDisplay>
       </HeaderContent>
     </StyledHeader>
   );

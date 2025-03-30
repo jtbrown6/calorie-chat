@@ -11,9 +11,14 @@ const Container = styled.div`
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 
 const Title = styled.h2`
@@ -23,14 +28,29 @@ const Title = styled.h2`
 const DateControls = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    margin-top: 0;
+    justify-content: flex-end;
+    gap: ${({ theme }) => theme.spacing.md};
+  }
 `;
 
 const DateDisplay = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: 500;
-  min-width: 160px;
+  min-width: 150px;
   text-align: center;
+  padding: ${({ theme }) => theme.spacing.xs} 0;
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    min-width: 160px;
+  }
 `;
 
 const MacroSection = styled.section`
@@ -195,25 +215,43 @@ const MealTime = styled.span`
 
 const FoodItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing.xs} 0;
+  flex-direction: column;
+  padding: ${({ theme }) => theme.spacing.sm} 0;
   border-bottom: 1px solid ${({ theme }) => theme.colors.background.main};
   
   &:last-child {
     border-bottom: none;
   }
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: ${({ theme }) => theme.spacing.xs} 0;
+  }
 `;
 
 const FoodName = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.md};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    margin-bottom: 0;
+  }
 `;
 
 const FoodMacros = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.xs};
   color: ${({ theme }) => theme.colors.text.secondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   align-items: center;
+  flex-wrap: wrap;
+  
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    gap: ${({ theme }) => theme.spacing.md};
+    flex-wrap: nowrap;
+  }
 `;
 
 const DeleteButton = styled.button`
