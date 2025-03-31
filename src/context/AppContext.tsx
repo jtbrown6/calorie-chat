@@ -177,23 +177,69 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Load data from localStorage on mount
+  // Load data from API on mount
   useEffect(() => {
-    const savedData = localStorage.getItem('calorieChat');
-    if (savedData) {
+    const loadData = async () => {
       try {
-        const parsedData = JSON.parse(savedData) as AppState;
-        dispatch({ type: 'LOAD_DATA', payload: parsedData });
+        const response = await fetch('/api/load-data');
+        if (response.ok) {
+          const data = await response.json();
+          // The server returns { calorieChat: "stringified JSON" }
+          if (data.calorieChat) {
+            const parsedState = JSON.parse(data.calorieChat) as AppState;
+            // Ensure currentDate is always today's date on initial load, regardless of saved state
+            parsedState.currentDate = format(new Date(), 'yyyy-MM-dd');
+            dispatch({ type: 'LOAD_DATA', payload: parsedState });
+            console.log('Data loaded successfully from server.');
+          }
+        } else if (response.status !== 404) { // 404 is expected if no data saved yet
+          console.error('Failed to load data from server:', response.statusText);
+        }
       } catch (error) {
-        console.error('Failed to load data from localStorage:', error);
+        console.error('Error fetching data from server:', error);
       }
-    }
-  }, []);
+    };
+    loadData();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
-  // Save data to localStorage whenever state changes
+  // Save data to API whenever state changes (excluding initial load)
+  const isInitialMount = React.useRef(true);
   useEffect(() => {
-    localStorage.setItem('calorieChat', JSON.stringify(state));
-  }, [state]);
+    // Prevent saving the initial default state before loading from API
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const saveData = async () => {
+      try {
+        // The server expects { data: "stringified JSON" }
+        const response = await fetch('/api/save-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ data: JSON.stringify(state) }), // Double stringify to match server expectation
+        });
+        if (response.ok) {
+          console.log('Data saved successfully to server.');
+        } else {
+          console.error('Failed to save data to server:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error saving data to server:', error);
+      }
+    };
+
+    // Debounce saving to avoid excessive API calls
+    const handler = setTimeout(() => {
+      saveData();
+    }, 500); // Save 500ms after the last state change
+
+    return () => {
+      clearTimeout(handler); // Cleanup timeout on unmount or if state changes again quickly
+    };
+  }, [state]); // Run this effect whenever the state object changes
 
   // Helper functions
   const addCustomFood = (food: Omit<CustomFood, 'id' | 'createdAt' | 'isCustom'>) => {
