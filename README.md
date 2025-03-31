@@ -86,6 +86,34 @@ CalorieChat uses a dedicated persistence system to ensure your data is saved bet
    - To restore data, place your backup file at `/app/data/calorieChat.json`
    - Restart the container
 
+## Future Enhancements
+
+While the current implementation works well for a single user, here are some potential areas for future improvement:
+
+### 1. Scalable Data Persistence
+
+The current method saves the entire application state to a single `calorieChat.json` file. While simple, this approach has limitations as data grows:
+
+-   **File Size:** The JSON file can become very large over time, containing all historical daily entries, custom foods, and chat history.
+-   **Performance:** Reading, parsing, and writing the entire large file on every load/save can become slow and resource-intensive (CPU, memory, disk I/O).
+-   **Granularity:** It's inefficient to query or update specific pieces of data (e.g., a single meal) without handling the entire state object.
+
+**Potential Alternatives:**
+
+-   **SQLite Database:** Integrate a file-based database like SQLite within the container. This would allow for efficient querying and updating of specific data records without loading the entire dataset. Requires adding the `sqlite3` package and using SQL or an ORM.
+-   **Dedicated Database Server:** For larger scale or multi-user scenarios, migrate to a more powerful database system (e.g., PostgreSQL, MongoDB) running as a separate service/container.
+-   **Split JSON Files:** As an intermediate step, the persistence logic could be modified to use multiple JSON files (e.g., `settings.json`, `customFoods.json`, `entries-YYYY-MM.json`). This reduces the size of individual file operations but adds complexity to the backend server.
+
+### 2. Authentication
+
+Currently, the application is accessible to anyone who can reach the URL. A simple authentication layer could be added:
+
+-   **Mechanism:** Implement a basic password check.
+-   **Configuration:** Store a hashed password securely (e.g., using an environment variable like `APP_PASSWORD_HASH` set during the Docker build).
+-   **Frontend:** Create a login screen component that prompts for the password.
+-   **Verification:** Compare the entered password (hashed) against the stored hash.
+-   **Session Management:** Upon successful login, set a flag in the browser's `sessionStorage` (e.g., `isAuthenticated=true`). The main app component would check for this flag on load; if present, show the app, otherwise show the login screen. `sessionStorage` automatically clears when the browser tab/window is closed, requiring login again for a new session.
+
 ## Configuration Options
 
 ### Port Mapping
