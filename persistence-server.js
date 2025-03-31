@@ -38,17 +38,21 @@ app.use((req, res, next) => {
 // API endpoint to save data
 app.post('/api/save-data', (req, res) => {
   try {
-    const data = req.body.data;
-    if (!data) {
-      return res.status(400).json({ error: 'No data provided' });
+    // Expect the raw state object directly in the body
+    const stateData = req.body; 
+    if (!stateData || typeof stateData !== 'object') {
+      console.error('Invalid data received for saving:', stateData);
+      return res.status(400).json({ error: 'Invalid data provided. Expected state object.' });
     }
 
-    fs.writeFileSync(DATA_FILE, data);
-    console.log(`Data saved to ${DATA_FILE}`);
+    // Stringify the object once before writing
+    const dataString = JSON.stringify(stateData, null, 2); // Pretty print for readability
+    fs.writeFileSync(DATA_FILE, dataString);
+    console.log(`Data successfully saved to ${DATA_FILE}. Size: ${dataString.length} bytes.`);
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error saving data:', error);
-    res.status(500).json({ error: 'Failed to save data' });
+    console.error(`Error saving data to ${DATA_FILE}:`, error);
+    res.status(500).json({ error: 'Failed to save data', details: error.message });
   }
 });
 
@@ -56,15 +60,23 @@ app.post('/api/save-data', (req, res) => {
 app.get('/api/load-data', (req, res) => {
   try {
     if (!fs.existsSync(DATA_FILE)) {
+      console.log(`Data file not found: ${DATA_FILE}. Returning 404.`);
       return res.status(404).json({ error: 'No saved data found' });
     }
 
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    console.log(`Data loaded from ${DATA_FILE}`);
-    res.status(200).json({ calorieChat: data });
+    const dataString = fs.readFileSync(DATA_FILE, 'utf8');
+    console.log(`Read ${dataString.length} bytes from ${DATA_FILE}. Attempting to parse.`);
+    
+    // Parse the JSON string into an object
+    const parsedData = JSON.parse(dataString); 
+    console.log(`Data successfully parsed from ${DATA_FILE}.`);
+    
+    // Send the parsed object directly
+    res.status(200).json(parsedData); 
   } catch (error) {
-    console.error('Error loading data:', error);
-    res.status(500).json({ error: 'Failed to load data' });
+    console.error(`Error loading or parsing data from ${DATA_FILE}:`, error);
+    // If parsing fails or other error occurs, return 500
+    res.status(500).json({ error: 'Failed to load or parse data', details: error.message });
   }
 });
 

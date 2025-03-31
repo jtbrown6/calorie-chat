@@ -188,15 +188,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try {
         const response = await fetch('/api/load-data');
         if (response.ok) {
-          const data = await response.json();
-          // The server returns { calorieChat: "stringified JSON" }
-          if (data.calorieChat) {
-            const parsedState = JSON.parse(data.calorieChat) as AppState;
-            dispatch({ type: 'LOAD_DATA', payload: parsedState });
+          // Server now sends the parsed state object directly
+          const loadedState = await response.json() as AppState; 
+          if (loadedState && typeof loadedState === 'object') {
+            dispatch({ type: 'LOAD_DATA', payload: loadedState });
             console.log('Data loaded successfully from server.');
           } else {
-             // Handle case where server returns OK but no calorieChat data (e.g., empty file)
-             console.log('No existing data found on server. Using initial state.');
+            // Should not happen if server sends valid JSON, but good to handle
+            console.warn('Received unexpected data format from server on load. Using initial state.', loadedState);
           }
         } else if (response.status === 404) {
            console.log('No saved data file found on server (404). Using initial state.');
@@ -227,7 +226,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ data: JSON.stringify(state) }), // Double stringify to match server expectation
+          // Send the state object directly, stringified once
+          body: JSON.stringify(state), 
         });
         if (response.ok) {
           console.log('Data saved successfully to server.');
