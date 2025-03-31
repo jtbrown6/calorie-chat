@@ -147,11 +147,16 @@ const appReducer = (state: AppState, action: Action): AppState => {
       };
 
     case 'LOAD_DATA': {
+      // Merge loaded state with initial state to ensure all keys exist
+      // Overwrite initial state values with loaded values where they exist
+      const mergedState = {
+        ...initialState, // Start with the default structure
+        ...action.payload, // Overwrite with loaded data
+      };
       // Ensure currentDate is always today's date on initial load,
       // regardless of the date potentially saved in the loaded state.
-      const loadedState = action.payload;
-      loadedState.currentDate = format(new Date(), 'yyyy-MM-dd');
-      return loadedState;
+      mergedState.currentDate = format(new Date(), 'yyyy-MM-dd');
+      return mergedState;
     }
     default:
       return state;
@@ -314,6 +319,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const getTodaysChatHistory = () => {
+    // Add defensive check: ensure chatHistory exists before accessing property
+    if (!state.chatHistory) {
+      console.warn('getTodaysChatHistory called when state.chatHistory is undefined. Returning empty array.');
+      return [];
+    }
     return state.chatHistory[state.currentDate] || [];
   };
 
