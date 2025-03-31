@@ -146,9 +146,13 @@ const appReducer = (state: AppState, action: Action): AppState => {
         currentDate: action.payload,
       };
 
-    case 'LOAD_DATA':
-      return action.payload;
-
+    case 'LOAD_DATA': {
+      // Ensure currentDate is always today's date on initial load,
+      // regardless of the date potentially saved in the loaded state.
+      const loadedState = action.payload;
+      loadedState.currentDate = format(new Date(), 'yyyy-MM-dd');
+      return loadedState;
+    }
     default:
       return state;
   }
@@ -176,6 +180,7 @@ export const AppContext = createContext<AppContextProps | undefined>(undefined);
 // Create provider component
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const [isLoaded, setIsLoaded] = React.useState(false); // Flag to track initial load completion
 
   // Load data from API on mount
   useEffect(() => {
@@ -187,27 +192,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           // The server returns { calorieChat: "stringified JSON" }
           if (data.calorieChat) {
             const parsedState = JSON.parse(data.calorieChat) as AppState;
-            // Ensure currentDate is always today's date on initial load, regardless of saved state
-            parsedState.currentDate = format(new Date(), 'yyyy-MM-dd');
             dispatch({ type: 'LOAD_DATA', payload: parsedState });
             console.log('Data loaded successfully from server.');
+          } else {
+             // Handle case where server returns OK but no calorieChat data (e.g., empty file)
+             console.log('No existing data found on server. Using initial state.');
           }
-        } else if (response.status !== 404) { // 404 is expected if no data saved yet
-          console.error('Failed to load data from server:', response.statusText);
+        } else if (response.status === 404) {
+           console.log('No saved data file found on server (404). Using initial state.');
+        } else {
+           console.error(`Failed to load data from server. Status: ${response.status} ${response.statusText}`);
         }
       } catch (error) {
         console.error('Error fetching data from server:', error);
+      } finally {
+        setIsLoaded(true); // Mark loading as complete, regardless of success/failure
       }
     };
     loadData();
   }, []); // Empty dependency array ensures this runs only once on mount
 
-  // Save data to API whenever state changes (excluding initial load)
-  const isInitialMount = React.useRef(true);
+  // Save data to API whenever state changes, but only after initial load is complete
   useEffect(() => {
-    // Prevent saving the initial default state before loading from API
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
+    // Don't save until initial load attempt is finished
+    if (!isLoaded) {
       return;
     }
 
