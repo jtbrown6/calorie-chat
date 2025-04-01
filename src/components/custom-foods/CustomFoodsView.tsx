@@ -125,9 +125,6 @@ const CustomFoodsView: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingFood, setEditingFood] = useState<CustomFood | null>(null);
   const [deletingFood, setDeletingFood] = useState<CustomFood | null>(null);
-
-  // Log the customFoods state received from context on render
-  console.log('[CustomFoodsView] Rendering with customFoods:', JSON.stringify(state.customFoods));
   
   const handleAddFood = (food: CustomFood) => {
     addCustomFood(food);
@@ -146,9 +143,14 @@ const CustomFoodsView: React.FC = () => {
     }
   };
   
-  const sortedFoods = [...state.customFoods].sort((a, b) => 
-    a.name.localeCompare(b.name)
-  );
+  // Memoize the sorted list to prevent unnecessary recalculations
+  const sortedFoods = React.useMemo(() => {
+    // Ensure state.customFoods is an array before sorting
+    const foodsToSort = Array.isArray(state.customFoods) ? state.customFoods : [];
+    return [...foodsToSort].sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
+  }, [state.customFoods]); // Dependency array ensures sorting only happens when customFoods changes
   
   return (
     <Container>

@@ -149,7 +149,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
     case 'LOAD_DATA': {
       // Merge loaded state with initial state to ensure all keys exist
       // Overwrite initial state values with loaded values where they exist
-      console.log('[LOAD_DATA] Raw payload received:', JSON.stringify(action.payload)); // Log raw payload
       const mergedState = {
         ...initialState, // Start with the default structure
         ...action.payload, // Overwrite with loaded data
@@ -157,7 +156,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
       // Ensure currentDate is always today's date on initial load,
       // regardless of the date potentially saved in the loaded state.
       mergedState.currentDate = format(new Date(), 'yyyy-MM-dd');
-      console.log('[LOAD_DATA] Merged state being returned:', JSON.stringify(mergedState)); // Log final merged state
       return mergedState;
     }
     default:
@@ -258,7 +256,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Helper functions
   const addCustomFood = (food: Omit<CustomFood, 'id' | 'createdAt' | 'isCustom'>) => {
-    console.log('[AppContext] addCustomFood called with:', JSON.stringify(food)); // Log function call
     const newFood: CustomFood = {
       ...food,
       id: uuidv4(),
@@ -269,12 +266,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteCustomFood = (id: string) => {
-    console.log('[AppContext] deleteCustomFood called with id:', id); // Log function call
     dispatch({ type: 'DELETE_CUSTOM_FOOD', payload: id });
   };
 
   const updateCustomFood = (food: CustomFood) => {
-    console.log('[AppContext] updateCustomFood called with:', JSON.stringify(food)); // Log function call
     dispatch({ type: 'UPDATE_CUSTOM_FOOD', payload: food });
   };
 
