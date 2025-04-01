@@ -125,6 +125,9 @@ const CustomFoodsView: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingFood, setEditingFood] = useState<CustomFood | null>(null);
   const [deletingFood, setDeletingFood] = useState<CustomFood | null>(null);
+
+  // Log the customFoods state received from context on render
+  console.log('[CustomFoodsView] Rendering with customFoods:', JSON.stringify(state.customFoods));
   
   const handleAddFood = (food: CustomFood) => {
     addCustomFood(food);
