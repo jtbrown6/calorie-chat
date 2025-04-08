@@ -1,207 +1,209 @@
-# CalorieChat - AI-Powered Nutrition Tracking App
+# CalorieChat
 
-CalorieChat is a React application that combines AI nutrition analysis with a calorie tracking dashboard. It allows you to easily track your daily food intake through natural language, analyze nutritional content, and monitor your progress toward your dietary goals.
+A nutrition tracking application with chat interface for logging food, tracking calories, and managing custom food items.
 
-![CalorieChat Screenshot](https://via.placeholder.com/800x450.png?text=CalorieChat+Screenshot)
+## New SQLite Database Integration
 
-## Features
+This application now uses SQLite for persistent data storage, allowing for improved data integrity and cross-device synchronization.
 
-- **AI-Powered Food Analysis**: Describe what you've eaten in natural language, and the app will calculate the nutritional content
-- **Custom Foods**: Add your own foods with precise nutritional information
-- **Dashboard**: Track your daily calories and macronutrient intake with visual progress indicators
-- **Data Persistence**: All your nutrition data is saved between sessions
-- **Responsive Design**: Works on desktop and mobile devices
+### Key Features
 
-## Docker Containerization
+- **SQLite Database**: All data is stored in a structured SQLite database for reliability and data integrity
+- **Cross-Device Synchronization**: Data is always synchronized between devices via the central database
+- **Refresh Button**: Manual refresh capability in the app header to fetch the latest data
+- **Fallback to Local Storage**: Data is cached in localStorage as a fallback for offline use
+- **Easy Migration**: Simple migration from the previous JSON-based storage
 
-CalorieChat is containerized for easy deployment and consistent behavior across environments.
-
-> **Note:** The project contains a nested git repository at `/calorie-chat` that is automatically excluded during the Docker build process. This nested directory is ignored in `.gitignore` and removed in the `Dockerfile` to prevent any submodule issues.
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-- OpenAI API Key (for the AI-powered food analysis)
-
-### Architecture
-
-The containerized application consists of:
-
-1. **React Frontend**: The main CalorieChat application
-2. **Nginx Web Server**: Serves the static React files efficiently
-3. **Persistence Server**: A small Express.js server that manages data persistence
-4. **Data Volume**: For persistent storage of user data
-
-## Quick Start
-
-### 1. Clone the Repository
-
-```bash
-git clone <repository-url>
-cd calorie-chat
-```
-
-### 2. Set up Environment Variables
-
-Create a `.env` file in the project root with your OpenAI API key:
-
-```
-REACT_APP_OPENAI_API_KEY=your_openai_api_key_here
-```
-
-### 3. Build and Run with Docker Compose
-
-```bash
-docker-compose up -d
-```
-
-This will:
-- Build the Docker image
-- Start the container on port 8081
-- Mount a persistent volume for data storage
-
-### 4. Access the Application
-
-Open your browser and navigate to:
-
-```
-http://192.168.1.214:8081
-```
-
-## Data Persistence
-
-CalorieChat uses a dedicated persistence system to ensure your data is saved between container restarts:
-
-1. **How it works**:
-   - A persistence server runs alongside the web server
-   - The client-side JavaScript intercepts localStorage operations
-   - Data is saved to a Docker volume mounted at `/app/data`
-
-2. **Backup your data**:
-   - The data is stored in JSON format at `/app/data/calorieChat.json`
-   - You can copy this file to create backups
-
-3. **Restore data**:
-   - To restore data, place your backup file at `/app/data/calorieChat.json`
-   - Restart the container
-
-## Future Enhancements
-
-While the current implementation works well for a single user, here are some potential areas for future improvement:
-
-### 1. Scalable Data Persistence
-
-The current method saves the entire application state to a single `calorieChat.json` file. While simple, this approach has limitations as data grows:
-
--   **File Size:** The JSON file can become very large over time, containing all historical daily entries, custom foods, and chat history.
--   **Performance:** Reading, parsing, and writing the entire large file on every load/save can become slow and resource-intensive (CPU, memory, disk I/O).
--   **Granularity:** It's inefficient to query or update specific pieces of data (e.g., a single meal) without handling the entire state object.
-
-**Potential Alternatives:**
-
--   **SQLite Database:** Integrate a file-based database like SQLite within the container. This would allow for efficient querying and updating of specific data records without loading the entire dataset. Requires adding the `sqlite3` package and using SQL or an ORM.
--   **Dedicated Database Server:** For larger scale or multi-user scenarios, migrate to a more powerful database system (e.g., PostgreSQL, MongoDB) running as a separate service/container.
--   **Split JSON Files:** As an intermediate step, the persistence logic could be modified to use multiple JSON files (e.g., `settings.json`, `customFoods.json`, `entries-YYYY-MM.json`). This reduces the size of individual file operations but adds complexity to the backend server.
-
-### 2. Authentication
-
-Currently, the application is accessible to anyone who can reach the URL. A simple authentication layer could be added:
-
--   **Mechanism:** Implement a basic password check.
--   **Configuration:** Store a hashed password securely (e.g., using an environment variable like `APP_PASSWORD_HASH` set during the Docker build).
--   **Frontend:** Create a login screen component that prompts for the password.
--   **Verification:** Compare the entered password (hashed) against the stored hash.
--   **Session Management:** Upon successful login, set a flag in the browser's `sessionStorage` (e.g., `isAuthenticated=true`). The main app component would check for this flag on load; if present, show the app, otherwise show the login screen. `sessionStorage` automatically clears when the browser tab/window is closed, requiring login again for a new session.
-
-## Configuration Options
-
-### Port Mapping
-
-The application uses port 8081 by default. To change this, modify the `docker-compose.yml` file:
-
-```yaml
-ports:
-  - "your_preferred_port:80"
-```
-
-### Static IP Address
-
-The application is configured to use the static IP 192.168.1.214. If your Docker host has a different IP, update it in the `docker-compose.yml` file:
-
-```yaml
-environment:
-  - HOST_IP=your_docker_host_ip
-```
-
-## Development
-
-### Building Without Docker
-
-If you want to run the application directly without Docker:
+## Development Setup
 
 1. Install dependencies:
-   ```bash
+   ```
    npm install
    ```
 
-2. Start the development server:
-   ```bash
+2. Start the React development server:
+   ```
    npm start
    ```
 
-3. Build for production:
-   ```bash
-   npm run build
+3. Start the SQLite database server (in a separate terminal):
+   ```
+   npm run db-server
    ```
 
-### File Structure
+## Migrating from JSON to SQLite
 
-- `src/` - React application source code
-- `public/` - Static assets
-- `Dockerfile` - Docker image definition
-- `docker-compose.yml` - Container orchestration
-- `nginx.conf` - Nginx web server configuration
-- `persistence-server.js` - Data persistence server
-- `localStorage-persistence.js` - Client-side persistence script
+If you're upgrading from a previous version using JSON storage, run the migration script:
 
-## Troubleshooting
+```
+npm run migrate-to-sqlite
+```
 
-### Data Not Persisting
+This will:
+1. Convert all existing JSON data to the SQLite database
+2. Create a backup of your original JSON file
+3. Report successful migration with the backup location
 
-If your data isn't being saved between container restarts:
+## Docker Deployment
 
-1. Check volume permissions:
-   ```bash
-   docker-compose exec calorie-chat ls -la /app/data
+The application can be deployed using Docker:
+
+1. Build and start the container:
+   ```
+   docker-compose up -d
    ```
 
-2. Verify the persistence server is running:
-   ```bash
-   docker-compose logs calorie-chat | grep "Persistence server running"
+2. The application will be available at:
+   ```
+   http://localhost:8081
    ```
 
-3. Check for errors in the browser console related to data saving
+## Environment Variables
 
-### Container Won't Start
+### Setting Up OpenAI API Key
 
-If the container fails to start:
+For local development:
 
-1. Check Docker logs:
-   ```bash
-   docker-compose logs calorie-chat
+1. Create a `.env` file in the project root (you can copy from the provided `.env.example`):
+   ```
+   REACT_APP_OPENAI_API_KEY=your_openai_api_key_here
    ```
 
-2. Verify your OpenAI API key is correctly set in the `.env` file
+2. Replace `your_openai_api_key_here` with your actual OpenAI API key
 
-3. Ensure ports 8081 and 3000 are available on your host machine
+For Docker deployment:
+
+1. Add the API key to your docker-compose command:
+   ```
+   REACT_APP_OPENAI_API_KEY=your_key docker-compose up -d
+   ```
+   
+   Or define it in your docker-compose.yml environment section.
+
+## Data Structure
+
+The SQLite database contains the following tables:
+
+- `settings`: User preferences and application settings
+- `custom_foods`: User-defined food items with nutritional information
+- `daily_entries`: Records of daily food consumption
+- `consumed_foods`: Detailed food consumption records
+- `chat_messages`: History of chat interactions
+
+## SQLite Database Management Guide
+
+### Accessing the SQLite Database
+
+**In Development Environment:**
+```bash
+# Install SQLite CLI if needed
+# On macOS:
+brew install sqlite3
+# On Ubuntu/Debian:
+sudo apt-get install sqlite3
+
+# Connect to the database (from project root)
+sqlite3 ./data/calorieChat.db
+```
+
+**In Docker Environment:**
+```bash
+# Get the container ID
+docker ps
+
+# Connect to the container
+docker exec -it [container_id] /bin/sh
+
+# Navigate to data directory
+cd /app/data
+
+# Connect to SQLite database
+sqlite3 calorieChat.db
+```
+
+### Useful SQLite Commands
+
+Once connected to the database, you can run these commands:
+
+```sql
+-- Show all tables
+.tables
+
+-- Display table schema
+.schema settings
+.schema custom_foods
+.schema daily_entries
+.schema consumed_foods
+.schema chat_messages
+
+-- Enable column headers and formatted output
+.headers on
+.mode column
+
+-- Query examples
+-- Get all settings
+SELECT * FROM settings;
+
+-- Get all custom foods
+SELECT * FROM custom_foods;
+
+-- Get daily entries for a specific date
+SELECT * FROM daily_entries WHERE date = '2025-04-08';
+
+-- Get consumed foods for a specific daily entry
+SELECT * FROM consumed_foods WHERE dailyEntryId = '(entry_id_from_previous_query)';
+
+-- Get chat messages for a specific date
+SELECT * FROM chat_messages WHERE date = '2025-04-08';
+
+-- Exit SQLite
+.quit
+```
+
+### Viewing Docker Logs
+
+To monitor database operations and ensure data is being saved:
+
+```bash
+# View logs from the container
+docker logs [container_id]
+
+# Follow logs in real-time
+docker logs -f [container_id]
+```
+
+You should see messages like:
+- "Data successfully loaded from database"
+- "Data successfully saved to database"
+- "Connected to SQLite database at /app/data/calorieChat.db"
+
+### Backup and Restore
+
+```bash
+# In development (from project root)
+# Backup
+sqlite3 ./data/calorieChat.db .dump > backup.sql
+
+# Restore
+sqlite3 ./data/calorieChat.db < backup.sql
+
+# In Docker
+# Backup
+docker exec -it [container_id] sh -c "cd /app/data && sqlite3 calorieChat.db .dump" > backup.sql
+
+# Restore
+cat backup.sql | docker exec -i [container_id] sh -c "cd /app/data && sqlite3 calorieChat.db"
+```
+
+## Cross-Device Usage
+
+To ensure you always have the latest data on any device:
+
+1. When switching devices, click the refresh button in the header to get the latest data
+2. The app automatically fetches fresh data on startup
+3. Data is always saved to the server when changes are made
+4. LocalStorage is used only as a fallback cache in case of server unavailability
 
 ## License
 
 [MIT License](LICENSE)
-
-## Acknowledgments
-
-- Built with React
-- Powered by OpenAI API for food analysis
-- Styled with styled-components

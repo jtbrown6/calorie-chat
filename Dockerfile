@@ -35,21 +35,22 @@ COPY --from=build /app/build /usr/share/nginx/html
 
 # Install persistence server dependencies
 COPY package.json /app/
-COPY persistence-server.js /app/
+COPY db-persistence-server.js /app/
 COPY localStorage-persistence.js /usr/share/nginx/html/
-RUN npm install express body-parser
+RUN npm install express body-parser better-sqlite3
 
 # Create data directory for persistence
 RUN mkdir -p /app/data && \
     chmod -R 777 /app/data
 
 # Expose ports
-EXPOSE 80 3000
+EXPOSE 80 3001
 
 # Create a startup script
 RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'export NODE_ENV=production' >> /app/start.sh && \
     echo 'nginx' >> /app/start.sh && \
-    echo 'node /app/persistence-server.js' >> /app/start.sh && \
+    echo 'node /app/db-persistence-server.js' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 # Start both Nginx and Node.js persistence server
