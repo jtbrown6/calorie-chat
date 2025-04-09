@@ -202,7 +202,8 @@ app.post('/api/save-data', (req, res) => {
       return res.status(400).json({ error: 'Invalid data provided. Expected state object.' });
     }
 
-    // Start a transaction
+    // Start a transaction with better error handling
+    let transactionSuccess = false;
     const transaction = db.transaction(() => {
       // Update settings
       const settings = appState.settings;
@@ -323,10 +324,21 @@ app.post('/api/save-data', (req, res) => {
     });
     
     // Execute the transaction
-    transaction();
+    try {
+      transaction();
+      transactionSuccess = true;
+    } catch (dbError) {
+      console.error('Transaction failed:', dbError);
+      throw dbError; // Re-throw to be caught by the outer try-catch
+    }
+    
+    // Only log success if transaction was successful
+    if (!transactionSuccess) {
+      throw new Error('Transaction execution failed');
+    }
     
     const stats = {
-      settings: settings ? 1 : 0,
+      settings: appState.settings ? 1 : 0,
       customFoods: appState.customFoods?.length || 0,
       dailyEntries: appState.dailyEntries?.length || 0,
       chatMessages: Object.values(appState.chatHistory || {}).reduce((sum, msgs) => sum + (Array.isArray(msgs) ? msgs.length : 0), 0)
@@ -363,7 +375,8 @@ app.post('/api/migrate-json', (req, res) => {
       return res.status(400).json({ error: 'Invalid JSON data format' });
     }
 
-    // Start a transaction
+    // Start a transaction with better error handling
+    let transactionSuccess = false;
     const transaction = db.transaction(() => {
       // Update settings
       const settings = appState.settings;
@@ -483,8 +496,18 @@ app.post('/api/migrate-json', (req, res) => {
       }
     });
     
-    // Execute the transaction
-    transaction();
+    // Execute the transaction with better error handling
+    try {
+      transaction();
+      transactionSuccess = true;
+    } catch (dbError) {
+      console.error('Migration transaction failed:', dbError);
+      throw dbError; // Re-throw to be caught by the outer try-catch
+    }
+    
+    if (!transactionSuccess) {
+      throw new Error('Migration transaction execution failed');
+    }
     
     // Rename the old JSON file as backup
     const backupFile = `${JSON_FILE}.bak.${Date.now()}`;
